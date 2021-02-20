@@ -1,5 +1,4 @@
-﻿using GodTouches;
-using TMPro;
+﻿using TMPro;
 using UnityEngine;
 
 public class PlayerManager : MonoBehaviour
@@ -9,6 +8,13 @@ public class PlayerManager : MonoBehaviour
 
     private readonly Vector2 size = new Vector2(30, 50);
 
+    public Vector2 GetSize()
+    {
+        var scale = this.transform.localScale;
+        return new Vector2(this.size.x * scale.y, this.size.y * scale.x);
+    }
+
+
     private void Update()
     {
         if (!Input.GetMouseButton(0) && !Input.GetMouseButtonDown(0)) return;
@@ -16,8 +22,9 @@ public class PlayerManager : MonoBehaviour
         // プレイヤーを動かす
         var tapX = Input.mousePosition.x / Screen.width * 750f - 750f / 2f;
         var playerSizeHalf = this.size.x * this.transform.localScale.y / 2;
-        tapX = Mathf.Max(tapX, -750 / 2f + playerSizeHalf);
-        tapX = Mathf.Min(tapX, 750 / 2f - playerSizeHalf);
+        // 端で移動制限
+        // tapX = Mathf.Max(tapX, -750 / 2f + playerSizeHalf);
+        // tapX = Mathf.Min(tapX, 750 / 2f - playerSizeHalf);
 
         var playerX = this.transform.localPosition.x;
 
@@ -27,7 +34,6 @@ public class PlayerManager : MonoBehaviour
         else if (Mathf.Abs(diff) > 20) playerX += diff / 4f;
         else if (Mathf.Abs(diff) > 5) playerX += diff / 2f;
         else playerX += diff;
-
 
         this.transform.localPosition = new Vector3(playerX, this.transform.localPosition.y);
     }
