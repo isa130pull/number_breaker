@@ -6,12 +6,11 @@ public class PlayerManager : MonoBehaviour
     [SerializeField] private TMP_Text text = default;
     [SerializeField] private BoxCollider2D collider = default;
 
-    private readonly Vector2 size = new Vector2(30, 50);
-
     public Vector2 GetSize()
     {
+        // 90度回転しているので座標系を反転させている
         var scale = this.transform.localScale;
-        return new Vector2(this.size.x * scale.y, this.size.y * scale.x);
+        return new Vector2(this.collider.size.y * scale.y, this.collider.size.x * scale.x);
     }
 
     private void Update()

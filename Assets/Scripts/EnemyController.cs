@@ -12,7 +12,7 @@ public class EnemyController : MonoBehaviour
     public Vector2 GetSize()
     {
         // TODO: 回転を考慮する
-        var size = this.collider.bounds.size;
+        var size = this.collider.size;
         var scale = this.transform.localScale;
         return new Vector2(size.x * scale.x, size.y * scale.y);
     }
@@ -20,7 +20,7 @@ public class EnemyController : MonoBehaviour
 
     private void Start()
     {
-        // this.text.text = this.Hp.ToString();
+        this.text.text = this.Hp.ToString();
     }
 
     public void CollisionBall(int damage)
@@ -38,7 +38,19 @@ public class EnemyController : MonoBehaviour
         else
         {
             this.text.text = this.Hp.ToString();
+            SetSize();
             // SoundManager.Instance.PlaySe("collisionblock");
         }
     }
+
+    // HPに応じてColliderのサイズ変更
+    private void SetSize()
+    {
+        Vector2 size;
+        if (this.Hp >= 10) size = new Vector3(60, 47);
+        else if (this.Hp > 1) size = new Vector3(30, 47);
+        else size = new Vector3(20, 47);
+        this.collider.size = size;
+    }
+    
 }
