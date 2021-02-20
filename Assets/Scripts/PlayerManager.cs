@@ -14,15 +14,14 @@ public class PlayerManager : MonoBehaviour
         return new Vector2(this.size.x * scale.y, this.size.y * scale.x);
     }
 
-
     private void Update()
     {
         if (!Input.GetMouseButton(0) && !Input.GetMouseButtonDown(0)) return;
 
         // プレイヤーを動かす
         var tapX = Input.mousePosition.x / Screen.width * 750f - 750f / 2f;
-        var playerSizeHalf = this.size.x * this.transform.localScale.y / 2;
         // 端で移動制限
+        // var playerSizeHalf = this.size.x * this.transform.localScale.y / 2;
         // tapX = Mathf.Max(tapX, -750 / 2f + playerSizeHalf);
         // tapX = Mathf.Min(tapX, 750 / 2f - playerSizeHalf);
 

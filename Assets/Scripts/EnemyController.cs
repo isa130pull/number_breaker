@@ -9,11 +9,20 @@ public class EnemyController : MonoBehaviour
 
     public int Hp;
 
+    public Vector2 GetSize()
+    {
+        // TODO: 回転を考慮する
+        var size = this.collider.bounds.size;
+        var scale = this.transform.localScale;
+        return new Vector2(size.x * scale.x, size.y * scale.y);
+    }
+
+
     private void Start()
     {
-        this.text.text = this.Hp.ToString();
+        // this.text.text = this.Hp.ToString();
     }
-    
+
     public void CollisionBall(int damage)
     {
         this.Hp -= damage;
@@ -32,5 +41,4 @@ public class EnemyController : MonoBehaviour
             // SoundManager.Instance.PlaySe("collisionblock");
         }
     }
-    
 }

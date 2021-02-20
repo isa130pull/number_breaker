@@ -12,31 +12,71 @@ public class BallController : MonoBehaviour
     public Vector2 Speed;
     private float baseSpeed;
     public int attack = 1;
-    private float collisionWaitTimer;
+    private float enemyCollisionTimer;
+
+    public Vector2 GetSize()
+    {
+        // TODO: 回転を考慮する
+        var size = this.collider.bounds.size;
+        var scale = this.transform.localScale;
+        return new Vector2(size.x * scale.x, size.y * scale.y);
+    }
 
     private void Awake()
     {
         // TODO: 仮値
-        this.baseSpeed = 4;
+        this.baseSpeed = 10;
         this.Speed = new Vector2(Utility.IsTrueOrFalse() ? this.baseSpeed : -this.baseSpeed, this.baseSpeed);
     }
 
     private void Update()
     {
-        this.collisionWaitTimer -= Time.deltaTime;
+        this.enemyCollisionTimer -= Time.deltaTime;
         var currentPosition = this.transform.localPosition;
         this.transform.localPosition = new Vector3(currentPosition.x + this.Speed.x, currentPosition.y + this.Speed.y);
     }
 
-    private void ReflectionEnemy(Vector3 targetPosition)
+    private void ReflectionEnemy(GameObject enemy)
     {
         var ballPosition = this.transform.localPosition;
+        // ボールと敵との位置差
+        var posDiff = new Vector2(ballPosition.x - enemy.transform.localPosition.x, ballPosition.y - enemy.transform.localPosition.y);
+        
+        // ボールの移動方向と位置差で判断
+        
+        // 上下
+        if (posDiff.x > 0 && this.Speed.x > 0 || posDiff.x < 0 && this.Speed.x < 0)
+        {
+            this.Speed = new Vector2(this.Speed.x, -this.Speed.y);
+            return;
+        }
 
-        // 角判定
-        const float cornerThreshold = 0.04f;
-        var xDiff = ballPosition.x - targetPosition.x;
-        var yDiff = ballPosition.y - targetPosition.y;
-        var xyDiff = Mathf.Abs(Mathf.Abs(xDiff) - Mathf.Abs(yDiff));
+        // 左右
+        if (posDiff.y > 0 && this.Speed.y > 0 || posDiff.y < 0 && this.Speed.y < 0)
+        {
+            this.Speed = new Vector2(-this.Speed.x, this.Speed.y);
+            return;
+        }
+
+        var ballSize = GetSize();
+        var enemySize = enemy.GetComponent<EnemyController>().GetSize();
+
+        var sizeDiff = new Vector2(ballSize.x / 2f + enemySize.x / 2f, ballSize.y / 2f + enemySize.y / 2f);
+        var rate = new Vector2(Mathf.Abs(posDiff.x) / sizeDiff.x, Mathf.Abs(posDiff.y) / sizeDiff.y);
+
+        // 上下
+        if (rate.x < rate.y)
+        {
+            this.Speed = new Vector2(this.Speed.x, -this.Speed.y);
+            // Debug.Log($"上下 xDiff {xDiff} yDiff {yDiff} xyDiff {xyDiff}");
+        }
+        // 左右
+        else
+        {
+            this.Speed = new Vector2(-this.Speed.x, this.Speed.y);
+            // Debug.Log($"左右 xDiff {xDiff} yDiff {yDiff} xyDiff {xyDiff}");
+        }
+
 
         // 右下
         // if (xDiff > 0 && yDiff < 0 && xyDiff < cornerThreshold)
@@ -70,33 +110,21 @@ public class BallController : MonoBehaviour
         //     else this.Speed = -this.Speed;
         //     // Debug.Log($"左下 xDiff {xDiff} yDiff {yDiff} xyDiff {xyDiff}");
         // }
-        // 上下
-        if (Mathf.Abs(xDiff) < Mathf.Abs(yDiff))
-        {
-            this.Speed = new Vector2(this.Speed.x, -this.Speed.y);
-            // Debug.Log($"上下 xDiff {xDiff} yDiff {yDiff} xyDiff {xyDiff}");
-        }
-        // 左右
-        else
-        {
-            this.Speed = new Vector2(-this.Speed.x, this.Speed.y);
-            // Debug.Log($"左右 xDiff {xDiff} yDiff {yDiff} xyDiff {xyDiff}");
-        }
     }
 
     private void ReflectionPlayer(GameObject player)
     {
         // プレイヤーバーに跳ね返るたびにスピードアップ
         this.baseSpeed *= 1.1f;
-        if (this.baseSpeed > 10) this.baseSpeed = 10;
+        if (this.baseSpeed > 30) this.baseSpeed = 30;
 
         var playerSize = player.GetComponent<PlayerManager>().GetSize();
         var ballPosition = this.transform.localPosition;
         var playerPosition = player.transform.localPosition;
-        
+
         // 左右下
         if (ballPosition.y < playerPosition.y) this.Speed = new Vector2(-this.Speed.x, this.Speed.y);
-        
+
         // あたった位置に応じて反射角を決める
         // TODO: 今の移動ベクトルも計算補正に入れる
         var rate = Mathf.Abs(ballPosition.x - playerPosition.x) / (playerSize.x / 2f);
@@ -123,11 +151,16 @@ public class BallController : MonoBehaviour
                     Object.Destroy(this.gameObject);
                 });
         }
-        else if (colliderName.Contains("Enemy") && this.collisionWaitTimer <= 0)
+        else if (colliderName.Contains("Enemy"))
         {
-            ReflectionEnemy(other.transform.localPosition);
+            Debug.Log(this.enemyCollisionTimer);
+            // 多段ヒット判定だと跳ね返り処理を行わない
+            if (this.enemyCollisionTimer < 0)
+            {
+                ReflectionEnemy(other.gameObject);
+                this.enemyCollisionTimer = 0.03f;
+            }
             other.gameObject.GetComponent<EnemyController>().CollisionBall(this.attack);
-            this.collisionWaitTimer = 0.1f;
         }
 
 //        Debug.Log($"OnTriggerEnter2D {other.gameObject.name}");
