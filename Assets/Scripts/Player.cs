@@ -1,10 +1,28 @@
-﻿using TMPro;
+﻿using System;
+using TMPro;
 using UnityEngine;
 
-public class PlayerManager : MonoBehaviour
+public class Player : MonoBehaviour
 {
     [SerializeField] private TMP_Text text = default;
     [SerializeField] private BoxCollider2D collider = default;
+    private int sizeLevel;
+
+    private void Awake()
+    {
+        Reset();
+    }
+
+    public void Reset()
+    {
+        this.sizeLevel = 1;
+        this.text.text = "1";
+    }
+
+    public void SetText(string text)
+    {
+        this.text.text = text;
+    }
 
     public Vector2 GetSize()
     {

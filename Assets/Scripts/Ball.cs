@@ -4,7 +4,7 @@ using TMPro;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
-public class BallController : MonoBehaviour
+public class Ball : MonoBehaviour
 {
     [SerializeField] private BoxCollider2D collider = default;
     [SerializeField] private TMP_Text text = default;
@@ -13,6 +13,7 @@ public class BallController : MonoBehaviour
     private float baseSpeed;
     public int attack = 1;
     private float enemyCollisionTimer;
+    public bool IsBreak {get; private set; }
 
     public Vector2 GetSize()
     {
@@ -24,10 +25,14 @@ public class BallController : MonoBehaviour
 
     private void Awake()
     {
+    }
+
+    public void Init(float angle)
+    {
+        SetSize();
         // TODO: 仮値
         this.baseSpeed = 10;
-        this.Speed = new Vector2(Utility.IsTrueOrFalse() ? this.baseSpeed : -this.baseSpeed, this.baseSpeed);
-        SetSize();
+        this.Speed = new Vector2(this.baseSpeed * Mathf.Cos(Utility.ToRadian(angle)), this.baseSpeed * Mathf.Sin(Utility.ToRadian(angle)));
     }
 
     private void Update()
@@ -60,7 +65,7 @@ public class BallController : MonoBehaviour
         }
 
         var ballSize = GetSize();
-        var enemySize = enemy.GetComponent<EnemyController>().GetSize();
+        var enemySize = enemy.GetComponent<Enemy>().GetSize();
 
         var sizeDiff = new Vector2(ballSize.x / 2f + enemySize.x / 2f, ballSize.y / 2f + enemySize.y / 2f);
         var rate = new Vector2(Mathf.Abs(posDiff.x) / sizeDiff.x, Mathf.Abs(posDiff.y) / sizeDiff.y);
@@ -119,7 +124,7 @@ public class BallController : MonoBehaviour
         this.baseSpeed *= 1.1f;
         if (this.baseSpeed > 30) this.baseSpeed = 30;
 
-        var playerSize = player.GetComponent<PlayerManager>().GetSize();
+        var playerSize = player.GetComponent<Player>().GetSize();
         var ballPosition = this.transform.localPosition;
         var playerPosition = player.transform.localPosition;
 
@@ -134,6 +139,7 @@ public class BallController : MonoBehaviour
         angle += 90;
 
         this.Speed = new Vector2(this.baseSpeed * Mathf.Cos(Utility.ToRadian(angle)), this.baseSpeed * Mathf.Sin(Utility.ToRadian(angle)));
+        SoundManager.Instance.PlaySe("se_player");
     }
 
     private void OnTriggerEnter2D(Collider2D other)
@@ -149,19 +155,20 @@ public class BallController : MonoBehaviour
                 .OnComplete(() =>
                 {
                     // TODO: ボールカウントを減らす
-                    Object.Destroy(this.gameObject);
+                    this.IsBreak = true;
+                    //Object.Destroy(this.gameObject);
                 });
         }
         else if (colliderName.Contains("Enemy"))
         {
-            Debug.Log(this.enemyCollisionTimer);
+            // Debug.Log(this.enemyCollisionTimer);
             // 多段ヒット判定だと跳ね返り処理を行わない
             if (this.enemyCollisionTimer < 0)
             {
                 ReflectionEnemy(other.gameObject);
                 this.enemyCollisionTimer = 0.03f;
             }
-            other.gameObject.GetComponent<EnemyController>().CollisionBall(this.attack);
+            other.gameObject.GetComponent<Enemy>().CollisionBall(this.attack);
         }
 
 //        Debug.Log($"OnTriggerEnter2D {other.gameObject.name}");

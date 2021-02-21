@@ -2,12 +2,13 @@
 using TMPro;
 using UnityEngine;
 
-public class EnemyController : MonoBehaviour
+public class Enemy : MonoBehaviour
 {
     [SerializeField] private BoxCollider2D collider = default;
     [SerializeField] private TMP_Text text = default;
 
     public int Hp;
+    public bool IsBreak {get; private set; }
 
     public Vector2 GetSize()
     {
@@ -29,17 +30,24 @@ public class EnemyController : MonoBehaviour
 
         if (this.Hp <= 0)
         {
+            SoundManager.Instance.PlaySe("se_block1");
             GetComponent<BoxCollider2D>().enabled = false;
             // ブロック削除処理
-            this.text.transform.DOScale(0, 0.2f).SetEase(Ease.Linear)
-                .OnComplete(() => Object.Destroy(this.gameObject));
-            // SoundManager.Instance.PlaySe("collisionblock");
+            var textScale = this.text.transform.localScale;
+            DOTween.Sequence()
+                .Append(this.text.transform.DOScale(textScale * 2f, 0.1f).SetEase(Ease.Linear))
+                .Join(this.text.DOFade(0, 0.1f).SetEase(Ease.Linear))
+                .OnComplete(() =>
+                {
+                    this.IsBreak = true;
+                    Object.Destroy(this.gameObject);
+                });
         }
         else
         {
+            SoundManager.Instance.PlaySe("se_block2");
             this.text.text = this.Hp.ToString();
             SetSize();
-            // SoundManager.Instance.PlaySe("collisionblock");
         }
     }
 
