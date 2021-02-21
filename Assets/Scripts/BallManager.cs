@@ -20,9 +20,17 @@ public class BallManager : MonoBehaviour
         return this.balls.Count;
     }
 
+    public void SetAttack(int param)
+    {
+        foreach (var ball in this.balls)
+        {
+            ball.SetAttack(param);
+        }
+    }
+
     public void CreateBall(int count, Vector2 createPosition)
     {
-        var ballObject = Resources.Load<Ball>("ball");
+        var ballObject = Resources.Load<Ball>("Ball");
         var baseAngle = Random.Range(45f, 135f);
 
         switch (count)

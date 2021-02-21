@@ -8,7 +8,7 @@ public class Enemy : MonoBehaviour
     [SerializeField] private TMP_Text text = default;
 
     public int Hp;
-    public bool IsBreak {get; private set; }
+    public bool IsBreak { get; private set; }
 
     public Vector2 GetSize()
     {
@@ -24,7 +24,7 @@ public class Enemy : MonoBehaviour
         this.text.text = this.Hp.ToString();
     }
 
-    public void CollisionBall(int damage)
+    public void Collision(int damage)
     {
         this.Hp -= damage;
 
@@ -32,6 +32,7 @@ public class Enemy : MonoBehaviour
         {
             SoundManager.Instance.PlaySe("se_block1");
             GetComponent<BoxCollider2D>().enabled = false;
+            CreateItem();
             // ブロック削除処理
             var textScale = this.text.transform.localScale;
             DOTween.Sequence()
@@ -60,5 +61,17 @@ public class Enemy : MonoBehaviour
         else size = new Vector3(20, 47);
         this.collider.size = size;
     }
-    
+
+
+    private void CreateItem()
+    {
+        // TODO: 確率は変動性に
+        const int createRate = 25;
+        if (Random.Range(0, 100) > createRate) return;
+
+        var itemObject = Resources.Load<Item>("Item");
+        var item = Object.Instantiate(itemObject, this.transform.parent);
+        item.transform.localPosition = this.transform.localPosition;
+        item.Init();
+    }
 }

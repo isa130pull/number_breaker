@@ -10,10 +10,10 @@ public class Ball : MonoBehaviour
     [SerializeField] private TMP_Text text = default;
 
     public Vector2 Speed;
-    private float baseSpeed;
-    public int attack = 1;
-    private float enemyCollisionTimer;
+    public int Attack { get; private set; } = 1;
     public bool IsBreak {get; private set; }
+    private float baseSpeed;
+    private float enemyCollisionTimer;
 
     public Vector2 GetSize()
     {
@@ -23,8 +23,10 @@ public class Ball : MonoBehaviour
         return new Vector2(size.x * scale.x, size.y * scale.y);
     }
 
-    private void Awake()
+    public void SetAttack(int addParam)
     {
+        this.Attack += addParam;
+        this.text.text = this.Attack.ToString();
     }
 
     public void Init(float angle)
@@ -168,7 +170,7 @@ public class Ball : MonoBehaviour
                 ReflectionEnemy(other.gameObject);
                 this.enemyCollisionTimer = 0.03f;
             }
-            other.gameObject.GetComponent<Enemy>().CollisionBall(this.attack);
+            other.gameObject.GetComponent<Enemy>().Collision(this.Attack);
         }
 
 //        Debug.Log($"OnTriggerEnter2D {other.gameObject.name}");
@@ -178,8 +180,8 @@ public class Ball : MonoBehaviour
     private void SetSize()
     {
         Vector2 size;
-        if (this.attack >= 10) size = new Vector3(60, 47);
-        else if (this.attack > 1) size = new Vector3(30, 47);
+        if (this.Attack >= 10) size = new Vector3(60, 47);
+        else if (this.Attack > 1) size = new Vector3(30, 47);
         else size = new Vector3(20, 47);
         this.collider.size = size;
     }
